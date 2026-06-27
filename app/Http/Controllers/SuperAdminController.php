@@ -65,12 +65,57 @@ class SuperAdminController extends Controller
     {
         $validated = $request->validate([
             'department_id' => ['required', 'exists:departments,id'],
-            'name' => ['required', 'string', 'max:255'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('labs', 'name')->where(fn ($query) => $query->where('department_id', $request->input('department_id'))),
+            ],
         ]);
 
         Lab::create($validated);
 
         return back()->with('success', 'Lab created successfully.');
+    }
+
+    public function updateDepartment(Request $request, Department $department)
+    {
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('departments', 'name')->ignore($department->id),
+            ],
+        ]);
+
+        $department->update($validated);
+
+        return back()->with('success', 'Department updated successfully.');
+    }
+
+    public function updateLab(Request $request, Lab $lab)
+    {
+        $validated = $request->validate([
+            'department_id' => ['required', 'exists:departments,id'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('labs', 'name')
+                    ->where(fn ($query) => $query->where('department_id', $request->input('department_id')))
+                    ->ignore($lab->id),
+            ],
+        ]);
+
+        $lab->update($validated);
+
+        User::where('lab_id', $lab->id)->update([
+            'department_id' => $validated['department_id'],
+            'lab_name' => $validated['name'],
+        ]);
+
+        return back()->with('success', 'Lab updated successfully.');
     }
 
     public function demote(User $user)

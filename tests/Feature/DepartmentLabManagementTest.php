@@ -55,4 +55,73 @@ class DepartmentLabManagementTest extends TestCase
             'name' => 'Power Systems Lab',
         ]);
     }
+
+    public function test_super_admin_can_update_department_name(): void
+    {
+        $department = Department::create(['name' => 'cse']);
+
+        $superAdmin = User::factory()->create([
+            'name' => 'Super Admin',
+            'email' => 'superadmin@example.com',
+            'password' => 'password',
+            'role' => 'super_admin',
+        ]);
+
+        $response = $this->actingAs($superAdmin)->patch("/super-admin/departments/{$department->id}", [
+            'name' => 'computer science',
+        ]);
+
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('departments', [
+            'id' => $department->id,
+            'name' => 'computer science',
+        ]);
+    }
+
+    public function test_super_admin_can_update_lab_name_and_sync_users(): void
+    {
+        $department = Department::create(['name' => 'eee']);
+        $lab = Lab::create([
+            'department_id' => $department->id,
+            'name' => 'Power Systems Lab',
+        ]);
+
+        $labAdmin = User::factory()->create([
+            'name' => 'Lab Admin',
+            'email' => 'labadmin@example.com',
+            'password' => 'password',
+            'role' => 'lab_admin',
+            'department_id' => $department->id,
+            'lab_id' => $lab->id,
+            'lab_name' => 'Power Systems Lab',
+        ]);
+
+        $superAdmin = User::factory()->create([
+            'name' => 'Super Admin',
+            'email' => 'superadmin@example.com',
+            'password' => 'password',
+            'role' => 'super_admin',
+        ]);
+
+        $response = $this->actingAs($superAdmin)->patch("/super-admin/labs/{$lab->id}", [
+            'department_id' => $department->id,
+            'name' => 'Electrical Machines Lab',
+        ]);
+
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('labs', [
+            'id' => $lab->id,
+            'department_id' => $department->id,
+            'name' => 'Electrical Machines Lab',
+        ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $labAdmin->id,
+            'department_id' => $department->id,
+            'lab_id' => $lab->id,
+            'lab_name' => 'Electrical Machines Lab',
+        ]);
+    }
 }

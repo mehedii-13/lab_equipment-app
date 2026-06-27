@@ -228,16 +228,16 @@
                 @csrf
                 <div>
                     <label for="lab_department_id" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Department</label>
-                    <select name="department_id" id="lab_department_id" class="w-full bg-slate-950/80 border border-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 rounded-xl py-3 px-4 text-slate-100 outline-none">
+                    <select name="department_id" id="lab_department_id" required class="w-full bg-slate-950/80 border border-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 rounded-xl py-3 px-4 text-slate-100 outline-none">
                         <option value="">Select department</option>
                         @foreach ($departments as $department)
-                            <option value="{{ $department->id }}">{{ $department->name }}</option>
+                            <option value="{{ $department->id }}" {{ old('department_id') == $department->id ? 'selected' : '' }}>{{ $department->name }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div>
                     <label for="lab_name_new" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Lab Name</label>
-                    <input type="text" name="name" id="lab_name_new" class="w-full bg-slate-950/80 border border-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 rounded-xl py-3 px-4 text-slate-100 outline-none" placeholder="Computer Lab">
+                    <input type="text" name="name" id="lab_name_new" value="{{ old('name') }}" class="w-full bg-slate-950/80 border border-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 rounded-xl py-3 px-4 text-slate-100 outline-none" placeholder="Computer Lab">
                 </div>
                 <button type="submit" class="cursor-pointer w-full py-3 px-4 bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-400 hover:to-orange-400 text-white font-bold rounded-xl transition-all duration-300">
                     Add Lab
@@ -245,41 +245,150 @@
             </form>
         </div>
     </div>
+
+    @if ($departments->isNotEmpty() || $labs->isNotEmpty())
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="backdrop-blur-md bg-slate-900/30 border border-slate-800/60 rounded-3xl p-8 shadow-xl">
+                <h3 class="text-lg font-bold text-white mb-2">Edit Department</h3>
+                <p class="text-xs text-slate-500 mb-6">Rename an existing department.</p>
+
+                @if ($departments->isNotEmpty())
+                    <form action="{{ route('super_admin.departments.update', $departments->first()) }}" method="POST" class="space-y-4" id="department-edit-form">
+                        @csrf
+                        @method('PATCH')
+                        <div>
+                            <label for="department_edit_select" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Department</label>
+                            <select name="department_id" id="department_edit_select" required class="w-full bg-slate-950/80 border border-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 rounded-xl py-3 px-4 text-slate-100 outline-none">
+                                <option value="">Select department</option>
+                                @foreach ($departments as $department)
+                                    <option value="{{ $department->id }}" data-update-url="{{ route('super_admin.departments.update', $department) }}" {{ old('department_id') == $department->id ? 'selected' : '' }}>
+                                        {{ $department->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label for="department_edit_name" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">New Department Name</label>
+                            <input type="text" name="name" id="department_edit_name" value="{{ old('name') }}" class="w-full bg-slate-950/80 border border-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 rounded-xl py-3 px-4 text-slate-100 outline-none" placeholder="Electrical Engineering">
+                        </div>
+                        <button type="submit" class="cursor-pointer w-full py-3 px-4 bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-400 hover:to-orange-400 text-white font-bold rounded-xl transition-all duration-300">
+                            Update Department
+                        </button>
+                    </form>
+                @else
+                    <div class="rounded-2xl border border-dashed border-slate-800 bg-slate-950/40 p-6 text-sm text-slate-500">
+                        Create a department before editing one.
+                    </div>
+                @endif
+            </div>
+
+            <div class="backdrop-blur-md bg-slate-900/30 border border-slate-800/60 rounded-3xl p-8 shadow-xl">
+                <h3 class="text-lg font-bold text-white mb-2">Edit Lab</h3>
+                <p class="text-xs text-slate-500 mb-6">Rename an existing lab.</p>
+
+                @if ($labs->isNotEmpty())
+                    <form action="{{ route('super_admin.labs.update', $labs->first()) }}" method="POST" class="space-y-4" id="lab-edit-form">
+                        @csrf
+                        @method('PATCH')
+                        <div>
+                            <label for="lab_edit_department_id" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Department</label>
+                            <select name="department_id" id="lab_edit_department_id" required data-selected="{{ old('lab_id') }}" class="w-full bg-slate-950/80 border border-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 rounded-xl py-3 px-4 text-slate-100 outline-none">
+                                <option value="">Select department</option>
+                                @foreach ($departments as $department)
+                                    <option value="{{ $department->id }}" {{ old('department_id') == $department->id ? 'selected' : '' }}>
+                                        {{ $department->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label for="lab_edit_lab_id" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Lab</label>
+                            <select name="lab_id" id="lab_edit_lab_id" required class="w-full bg-slate-950/80 border border-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 rounded-xl py-3 px-4 text-slate-100 outline-none">
+                                <option value="">Select a department first</option>
+                                @foreach ($labs as $lab)
+                                    <option value="{{ $lab->id }}" data-department-id="{{ $lab->department_id }}" {{ old('lab_id') == $lab->id ? 'selected' : '' }}>
+                                        {{ $lab->name }} ({{ $lab->department->name }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label for="lab_edit_name" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">New Lab Name</label>
+                            <input type="text" name="name" id="lab_edit_name" value="{{ old('name') }}" class="w-full bg-slate-950/80 border border-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 rounded-xl py-3 px-4 text-slate-100 outline-none" placeholder="Programming Lab">
+                        </div>
+                        <button type="submit" class="cursor-pointer w-full py-3 px-4 bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-400 hover:to-orange-400 text-white font-bold rounded-xl transition-all duration-300">
+                            Update Lab
+                        </button>
+                    </form>
+                @else
+                    <div class="rounded-2xl border border-dashed border-slate-800 bg-slate-950/40 p-6 text-sm text-slate-500">
+                        Create a lab before editing one.
+                    </div>
+                @endif
+            </div>
+        </div>
+    @endif
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const departmentSelect = document.getElementById('department_id');
-    const labSelect = document.getElementById('lab_id');
-    if (!departmentSelect || !labSelect) {
-        return;
-    }
+    const wireLabSelect = (departmentSelectId, labSelectId) => {
+        const departmentSelect = document.getElementById(departmentSelectId);
+        const labSelect = document.getElementById(labSelectId);
 
-    const labOptions = Array.from(labSelect.querySelectorAll('option[data-department-id]'));
-    const selectedLabId = labSelect.dataset.selected;
-
-    const refreshLabs = () => {
-        const departmentId = departmentSelect.value;
-        labSelect.innerHTML = '';
-
-        const placeholder = document.createElement('option');
-        placeholder.value = '';
-        placeholder.textContent = departmentId ? 'Select lab' : 'Select a department first';
-        labSelect.appendChild(placeholder);
-
-        labOptions
-            .filter((option) => !departmentId || option.dataset.departmentId === departmentId)
-            .forEach((option) => {
-                labSelect.appendChild(option.cloneNode(true));
-            });
-
-        if (departmentId && selectedLabId) {
-            labSelect.value = selectedLabId;
+        if (!departmentSelect || !labSelect) {
+            return;
         }
+
+        const labOptions = Array.from(labSelect.querySelectorAll('option[data-department-id]'));
+        const selectedLabId = labSelect.dataset.selected;
+
+        const refreshLabs = () => {
+            const departmentId = departmentSelect.value;
+            labSelect.innerHTML = '';
+
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = departmentId ? 'Select lab' : 'Select a department first';
+            labSelect.appendChild(placeholder);
+
+            labOptions
+                .filter((option) => !departmentId || option.dataset.departmentId === departmentId)
+                .forEach((option) => {
+                    labSelect.appendChild(option.cloneNode(true));
+                });
+
+            if (departmentId && selectedLabId) {
+                labSelect.value = selectedLabId;
+            }
+        };
+
+        departmentSelect.addEventListener('change', refreshLabs);
+        refreshLabs();
     };
 
-    departmentSelect.addEventListener('change', refreshLabs);
-    refreshLabs();
+    wireLabSelect('department_id', 'lab_id');
+    wireLabSelect('lab_edit_department_id', 'lab_edit_lab_id');
+
+    const departmentEditSelect = document.getElementById('department_edit_select');
+    const departmentEditName = document.getElementById('department_edit_name');
+    const departmentEditForm = document.getElementById('department-edit-form');
+
+    if (departmentEditSelect && departmentEditName && departmentEditForm) {
+        const syncDepartmentEdit = () => {
+            const selectedOption = departmentEditSelect.selectedOptions[0];
+
+            if (!selectedOption || !selectedOption.value) {
+                return;
+            }
+
+            departmentEditName.value = selectedOption.textContent.trim();
+            departmentEditForm.action = selectedOption.dataset.updateUrl;
+        };
+
+        departmentEditSelect.addEventListener('change', syncDepartmentEdit);
+        syncDepartmentEdit();
+    }
 });
 </script>
 @endsection
