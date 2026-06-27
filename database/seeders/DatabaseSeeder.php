@@ -15,11 +15,28 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Seed Super Admin
+        User::create([
+            'name' => 'Super Admin',
+            'email' => 'superadmin@example.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('password'),
+            'role' => 'super_admin',
+        ]);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Seed Lab Admin
+        User::create([
+            'name' => 'Dr. Jane Smith (Lab Admin)',
+            'email' => 'labadmin@example.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('password'),
+            'role' => 'lab_admin',
+        ]);
+
+        // Seed Student
+        User::create([
+            'name' => 'John Doe (Student)',
+            'email' => 'student@example.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('password'),
+            'role' => 'student',
         ]);
     }
 }
