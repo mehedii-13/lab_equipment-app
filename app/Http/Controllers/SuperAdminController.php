@@ -4,13 +4,39 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules;
 
 class SuperAdminController extends Controller
 {
     public function index()
     {
-        $admins = User::where('role', 'lab_admin')->orderBy('name')->get();
-        return view('super-admin.dashboard', compact('admins'));
+        $privilegedUsers = User::whereIn('role', ['super_admin', 'lab_admin'])
+            ->orderBy('role')
+            ->orderBy('name')
+            ->get();
+        $labAdmins = $privilegedUsers->where('role', 'lab_admin')->values();
+
+        return view('super-admin.dashboard', compact('privilegedUsers', 'labAdmins'));
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'role' => ['required', Rule::in(['super_admin', 'lab_admin'])],
+        ]);
+
+        User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => $validated['password'],
+            'role' => $validated['role'],
+        ]);
+
+        return back()->with('success', 'Privileged user created successfully.');
     }
 
     public function demote(User $user)

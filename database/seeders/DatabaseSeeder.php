@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,28 +16,22 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Seed Super Admin
-        User::create([
-            'name' => 'Super Admin',
-            'email' => 'superadmin@example.com',
-            'password' => \Illuminate\Support\Facades\Hash::make('password'),
-            'role' => 'super_admin',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'superadmin@example.com'],
+            [
+                'name' => 'Super Admin',
+                'password' => Hash::make('password'),
+                'role' => 'super_admin',
+            ]
+        );
 
-        // Seed Lab Admin
-        User::create([
-            'name' => 'Dr. Jane Smith (Lab Admin)',
-            'email' => 'labadmin@example.com',
-            'password' => \Illuminate\Support\Facades\Hash::make('password'),
-            'role' => 'lab_admin',
-        ]);
-
-        // Seed Student
-        User::create([
-            'name' => 'John Doe (Student)',
-            'email' => 'student@example.com',
-            'password' => \Illuminate\Support\Facades\Hash::make('password'),
-            'role' => 'student',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'superadmin2@example.com'],
+            [
+                'name' => 'Super Admin 2',
+                'password' => Hash::make('password123'),
+                'role' => 'super_admin',
+            ]
+        );
     }
 }

@@ -47,6 +47,7 @@ Route::middleware('auth')->group(function () {
     // Super Admin Dashboard & Actions
     Route::middleware('role:super_admin')->group(function () {
         Route::get('/super-admin/dashboard', [SuperAdminController::class, 'index'])->name('super_admin.dashboard');
+        Route::post('/super-admin/users', [SuperAdminController::class, 'store'])->name('super_admin.users.store');
         Route::post('/super-admin/demote-admin/{user}', [SuperAdminController::class, 'demote'])->name('super_admin.demote');
     });
 });

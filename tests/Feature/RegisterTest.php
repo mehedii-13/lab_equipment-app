@@ -15,21 +15,20 @@ class RegisterTest extends TestCase
     {
         $response = $this->post('/register', [
             'name' => 'Alex Johnson',
-            'email' => 'alex@example.com',
+            'email' => 'alex@stud.kuet.ac.bd',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'role' => 'student',
         ]);
 
         $response->assertRedirect('/student/dashboard');
 
         $this->assertDatabaseHas('users', [
             'name' => 'Alex Johnson',
-            'email' => 'alex@example.com',
+            'email' => 'alex@stud.kuet.ac.bd',
             'role' => 'student',
         ]);
 
-        $user = User::where('email', 'alex@example.com')->firstOrFail();
+        $user = User::where('email', 'alex@stud.kuet.ac.bd')->firstOrFail();
         $this->assertTrue(Hash::check('password', $user->password));
         $this->assertAuthenticatedAs($user);
     }
