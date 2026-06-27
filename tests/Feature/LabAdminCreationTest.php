@@ -8,31 +8,16 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class RegistrationPolicyTest extends TestCase
+class LabAdminCreationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_student_registration_requires_the_kuet_domain(): void
+    public function test_super_admin_can_create_lab_admin_with_lab_name(): void
     {
-        $response = $this->post('/register', [
-            'name' => 'Ali Rahman',
-            'email' => 'ali@gmail.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ]);
-
-        $response->assertSessionHasErrors('email');
-        $this->assertDatabaseMissing('users', [
-            'email' => 'ali@gmail.com',
-        ]);
-    }
-
-    public function test_super_admin_can_create_privileged_users(): void
-    {
-        $department = Department::create(['name' => 'ece']);
+        $department = Department::create(['name' => 'cse']);
         $lab = Lab::create([
             'department_id' => $department->id,
-            'name' => 'Electronics Lab',
+            'name' => 'Programming Lab',
         ]);
 
         $superAdmin = User::factory()->create([

@@ -56,6 +56,31 @@
                 </div>
 
                 <div>
+                    <label for="department_id" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Department</label>
+                    <select name="department_id" id="department_id" data-selected="{{ old('lab_id') }}" class="w-full bg-slate-950/80 border border-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 rounded-xl py-3 px-4 text-slate-100 outline-none">
+                        <option value="">Select department</option>
+                        @foreach ($departments as $department)
+                            <option value="{{ $department->id }}" {{ old('department_id') == $department->id ? 'selected' : '' }}>
+                                {{ $department->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label for="lab_id" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Lab</label>
+                    <select name="lab_id" id="lab_id" class="w-full bg-slate-950/80 border border-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 rounded-xl py-3 px-4 text-slate-100 outline-none">
+                        <option value="">Select a department first</option>
+                        @foreach ($labs as $lab)
+                            <option value="{{ $lab->id }}" data-department-id="{{ $lab->department_id }}" {{ old('lab_id') == $lab->id ? 'selected' : '' }}>
+                                {{ $lab->name }} ({{ $lab->department->name }})
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="mt-2 text-[11px] text-slate-500">Required when creating a lab admin.</p>
+                </div>
+
+                <div>
                     <label for="role" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Role</label>
                     <select name="role" id="role" required class="w-full bg-slate-950/80 border border-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 rounded-xl py-3 px-4 text-slate-100 outline-none">
                         <option value="lab_admin" {{ old('role', 'lab_admin') === 'lab_admin' ? 'selected' : '' }}>Lab Admin</option>
@@ -101,6 +126,12 @@
                             <div>
                                 <p class="font-semibold text-slate-100">{{ $privilegedUser->name }}</p>
                                 <p class="text-sm text-slate-400">{{ $privilegedUser->email }}</p>
+                                @if ($privilegedUser->department)
+                                    <p class="text-xs text-slate-500 mt-1">Dept: {{ $privilegedUser->department->name }}</p>
+                                @endif
+                                @if ($privilegedUser->lab)
+                                    <p class="text-xs text-slate-500 mt-1">Lab: {{ $privilegedUser->lab->name }}</p>
+                                @endif
                             </div>
                             <span class="px-2.5 py-0.5 text-xs font-medium rounded-full uppercase tracking-wider {{ $privilegedUser->role === 'super_admin' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-purple-500/10 text-purple-400 border border-purple-500/20' }}">
                                 {{ str_replace('_', ' ', $privilegedUser->role) }}
@@ -138,6 +169,8 @@
                         <tr class="border-b border-slate-800/50 text-slate-400 text-xs font-bold uppercase tracking-wider bg-slate-950/20">
                             <th class="px-8 py-4">Name</th>
                             <th class="px-8 py-4">Email</th>
+                            <th class="px-8 py-4">Department</th>
+                            <th class="px-8 py-4">Lab</th>
                             <th class="px-8 py-4">Current Role</th>
                             <th class="px-8 py-4 text-right">Actions</th>
                         </tr>
@@ -147,6 +180,8 @@
                             <tr class="hover:bg-slate-900/10 transition-colors">
                                 <td class="px-8 py-4 font-semibold text-slate-200">{{ $admin->name }}</td>
                                 <td class="px-8 py-4 text-slate-400">{{ $admin->email }}</td>
+                                <td class="px-8 py-4 text-slate-400">{{ $admin->department?->name ?? '-' }}</td>
+                                <td class="px-8 py-4 text-slate-400">{{ $admin->lab?->name ?? ($admin->lab_name ?? '-') }}</td>
                                 <td class="px-8 py-4">
                                     <span class="px-2.5 py-0.5 text-xs font-medium rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 uppercase tracking-wider">
                                         {{ str_replace('_', ' ', $admin->role) }}
@@ -167,5 +202,84 @@
             </div>
         @endif
     </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="backdrop-blur-md bg-slate-900/30 border border-slate-800/60 rounded-3xl p-8 shadow-xl">
+            <h3 class="text-lg font-bold text-white mb-2">Add Department</h3>
+            <p class="text-xs text-slate-500 mb-6">Create a new department for the dropdown list.</p>
+
+            <form action="{{ route('super_admin.departments.store') }}" method="POST" class="space-y-4">
+                @csrf
+                <div>
+                    <label for="department_name" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Department Name</label>
+                    <input type="text" name="name" id="department_name" class="w-full bg-slate-950/80 border border-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 rounded-xl py-3 px-4 text-slate-100 outline-none" placeholder="CSE">
+                </div>
+                <button type="submit" class="cursor-pointer w-full py-3 px-4 bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-400 hover:to-orange-400 text-white font-bold rounded-xl transition-all duration-300">
+                    Add Department
+                </button>
+            </form>
+        </div>
+
+        <div class="backdrop-blur-md bg-slate-900/30 border border-slate-800/60 rounded-3xl p-8 shadow-xl">
+            <h3 class="text-lg font-bold text-white mb-2">Add Lab</h3>
+            <p class="text-xs text-slate-500 mb-6">Attach a lab to a department.</p>
+
+            <form action="{{ route('super_admin.labs.store') }}" method="POST" class="space-y-4">
+                @csrf
+                <div>
+                    <label for="lab_department_id" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Department</label>
+                    <select name="department_id" id="lab_department_id" class="w-full bg-slate-950/80 border border-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 rounded-xl py-3 px-4 text-slate-100 outline-none">
+                        <option value="">Select department</option>
+                        @foreach ($departments as $department)
+                            <option value="{{ $department->id }}">{{ $department->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label for="lab_name_new" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Lab Name</label>
+                    <input type="text" name="name" id="lab_name_new" class="w-full bg-slate-950/80 border border-slate-800 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 rounded-xl py-3 px-4 text-slate-100 outline-none" placeholder="Computer Lab">
+                </div>
+                <button type="submit" class="cursor-pointer w-full py-3 px-4 bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-400 hover:to-orange-400 text-white font-bold rounded-xl transition-all duration-300">
+                    Add Lab
+                </button>
+            </form>
+        </div>
+    </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const departmentSelect = document.getElementById('department_id');
+    const labSelect = document.getElementById('lab_id');
+    if (!departmentSelect || !labSelect) {
+        return;
+    }
+
+    const labOptions = Array.from(labSelect.querySelectorAll('option[data-department-id]'));
+    const selectedLabId = labSelect.dataset.selected;
+
+    const refreshLabs = () => {
+        const departmentId = departmentSelect.value;
+        labSelect.innerHTML = '';
+
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = departmentId ? 'Select lab' : 'Select a department first';
+        labSelect.appendChild(placeholder);
+
+        labOptions
+            .filter((option) => !departmentId || option.dataset.departmentId === departmentId)
+            .forEach((option) => {
+                labSelect.appendChild(option.cloneNode(true));
+            });
+
+        if (departmentId && selectedLabId) {
+            labSelect.value = selectedLabId;
+        }
+    };
+
+    departmentSelect.addEventListener('change', refreshLabs);
+    refreshLabs();
+});
+</script>
 @endsection
